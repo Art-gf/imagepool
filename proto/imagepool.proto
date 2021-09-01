@@ -1,0 +1,41 @@
+syntax = "proto3";
+option go_package = "./";
+package imagepool;
+
+
+service ImagePoolService {
+    rpc Exchanger(stream Request) returns (stream Response) {}
+}
+
+service ImageListService {
+    rpc List(stream Request) returns (stream Response) {}
+}
+
+
+enum state {
+    S_READY = 0;
+    S_BUSY = 1;
+    S_DONE = 2;
+    S_ERROR = 3;
+}
+
+enum cmd {
+    C_WAIT = 0;
+    C_PUSH = 1;
+    C_GET = 2;
+    C_LIST = 3;
+}
+
+message Request {
+    string Message = 1;
+    bytes Bytes = 2;
+    state State = 3;
+    cmd Cmd = 4;
+}
+
+message Response {
+    string Message = 1;
+    bytes Bytes = 2; 
+    state State = 3;
+}
+
