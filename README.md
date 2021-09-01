@@ -1,9 +1,15 @@
 # imagepool
 Simple server and client on GO+gRPC to file exchange
 
-client push <C:client/> <pic.png>       recieve file on dir to server
-client get <C:client/> <pic.png>        save file from server on dir
-client list                             list of files (on Unix may or may not throw an exception, see server/main.go(155) ) 
+Recieve file from dir to server:
+>client push <C:/client/> <pic.png>
 
-There is no to stop server command, but can do,  its no hard
-Server create storage folder on .exe file dir 
+Save file from server to dir:
+>client get <C:/client/> <pic.png>       
+
+List of files (on Unix may or may not throw an exception, see server/main.go(155)):
+>client list
+
+There is no to stop server command, but can do,  its no hard.
+
+Server will create or open storage folder on .exe dir 
