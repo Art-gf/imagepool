@@ -171,6 +171,7 @@ func main() {
 
 	listener, err := net.Listen("tcp", ADR_1)
 	stuffs.ErrorExit(err)
+
 	listener2, err := net.Listen("tcp", ADR_2)
 	stuffs.ErrorExit(err)
 
