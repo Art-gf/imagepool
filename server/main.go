@@ -20,6 +20,8 @@ const (
 	ST_FOLDER = "hdd" // папка хранения файлов
 	ADR_1     = "localhost:8080"
 	ADR_2     = "localhost:8085"
+	MAX_1     = 10
+	MAX_2     = 100
 )
 
 type ImagePoolServer struct {
@@ -172,8 +174,8 @@ func main() {
 	listener2, err := net.Listen("tcp", ADR_2)
 	stuffs.ErrorExit(err)
 
-	server1 := grpc.NewServer(grpc.MaxConcurrentStreams(10))
-	server2 := grpc.NewServer(grpc.MaxConcurrentStreams(100))
+	server1 := grpc.NewServer(grpc.MaxConcurrentStreams(MAX_1))
+	server2 := grpc.NewServer(grpc.MaxConcurrentStreams(MAX_2))
 
 	instanceExchanger := CreateServerExchanger()
 	instanceList := CreateServerList(instanceExchanger)
