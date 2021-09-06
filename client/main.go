@@ -141,13 +141,13 @@ func listFile(c ui.ImageListServiceClient) {
 }
 
 func main() {
-	conn, err := grpc.Dial(ADR_1, grpc.WithInsecure())
+	conn_1, err := grpc.Dial(ADR_1, grpc.WithInsecure())
 	stuffs.ErrorExit(err)
-	conn2, err := grpc.Dial(ADR_2, grpc.WithInsecure())
+	conn_2, err := grpc.Dial(ADR_2, grpc.WithInsecure())
 	stuffs.ErrorExit(err)
 
-	clientExchanger := ui.NewImagePoolServiceClient(conn)
-	clientList := ui.NewImageListServiceClient(conn2)
+	client_1 := ui.NewImagePoolServiceClient(conn_1)
+	client_2 := ui.NewImageListServiceClient(conn_2)
 
 	if len(os.Args) < 2 {
 		fmt.Println(UNEXP)
@@ -159,16 +159,16 @@ func main() {
 		if len(os.Args) < 4 || os.Args[2] == "" || os.Args[3] == "" {
 			log.Fatalln(MOREAR)
 		} else {
-			pushFile(clientExchanger, os.Args[2], os.Args[3])
+			pushFile(client_1, os.Args[2], os.Args[3])
 		}
 	case GETF:
 		if len(os.Args) < 4 || os.Args[2] == "" || os.Args[3] == "" {
 			log.Fatalln(MOREAR)
 		} else {
-			getFile(clientExchanger, os.Args[2], os.Args[3])
+			getFile(client_1, os.Args[2], os.Args[3])
 		}
 	case LISTF:
-		listFile(clientList)
+		listFile(client_2)
 	case "?", "help":
 		fmt.Println(ABOUT)
 	default:
