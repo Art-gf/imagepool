@@ -168,23 +168,22 @@ func listFile(s *ImageListServer, stream ui.ImageListService_ListServer, msg_cli
 }
 
 func main() {
-
-	listener, err := net.Listen("tcp", ADR_1)
+	listener_1, err := net.Listen("tcp", ADR_1)
 	stuffs.ErrorExit(err)
-	listener2, err := net.Listen("tcp", ADR_2)
+	listener_2, err := net.Listen("tcp", ADR_2)
 	stuffs.ErrorExit(err)
 
-	server1 := grpc.NewServer(grpc.MaxConcurrentStreams(MAX_1))
-	server2 := grpc.NewServer(grpc.MaxConcurrentStreams(MAX_2))
+	server_1 := grpc.NewServer(grpc.MaxConcurrentStreams(MAX_1))
+	server_2 := grpc.NewServer(grpc.MaxConcurrentStreams(MAX_2))
 
-	instanceExchanger := CreateServerExchanger()
-	instanceList := CreateServerList(instanceExchanger)
+	instance_1 := CreateServerExchanger()
+	instance_2 := CreateServerList(instance_1)
 
-	ui.RegisterImagePoolServiceServer(server1, instanceExchanger)
-	ui.RegisterImageListServiceServer(server2, instanceList)
+	ui.RegisterImagePoolServiceServer(server_1, instance_1)
+	ui.RegisterImageListServiceServer(server_2, instance_2)
 
-	go func() { stuffs.ErrorExit(server1.Serve(listener)) }()
-	stuffs.ErrorExit(server2.Serve(listener2))
+	go func() { stuffs.ErrorExit(server_1.Serve(listener_1)) }()
+	stuffs.ErrorExit(server_2.Serve(listener_2))
 
 	// два отдельных порта нужно для ограничения подключения на одном до 10, на другом до 100
 	// как это сделать с привязкой к методу не знаю пока (из протофайла который, если бы их там было несколько)
