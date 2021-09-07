@@ -1,5 +1,5 @@
 # imagepool
-Simple server and client on GO+gRPC for file exchange
+Simple server and client on GO+gRPC for file exchange (.jpeg .png .gif only)
 
 Recieve file from dir to server:
 >client push <C:/client/> <pic.png>
