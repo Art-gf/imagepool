@@ -145,6 +145,7 @@ func getFile(s *ImagePoolServer, stream ui.ImagePoolService_ExchangerServer, msg
 func listFile(s *ImageListServer, stream ui.ImageListService_ListServer, msg_client *ui.Request) error {
 	log.Println("Send file list: new request")
 	files, err := ioutil.ReadDir(s.folder)
+
 	stuffs.ErrorExit(err)
 	msg_server := &ui.Response{Message: "No | filename | created | modified", State: ui.State_S_READY}
 	stuffs.ErrorExit(stream.Send(msg_server))

@@ -4,7 +4,12 @@ import (
 	ui "afg/imagepool/proto"
 	"afg/imagepool/stuffs"
 
-	"bufio"
+	"image"
+	_ "image/gif"
+	_ "image/jpeg"
+	_ "image/png"
+
+	//"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -32,6 +37,8 @@ const (
 
 	UNEXP  = "Unexpected command, run with '?' or 'help' for usage"
 	MOREAR = "Need more arguments: <filepath> <name.type>"
+
+	RS_BYTE = 1024
 )
 
 func pushFile(c ui.ImagePoolServiceClient, filePath, fileName string) {
@@ -39,20 +46,27 @@ func pushFile(c ui.ImagePoolServiceClient, filePath, fileName string) {
 	stuffs.ErrorExit(err)
 	defer file.Close()
 
+	_, _, err = image.Decode(file)
+	stuffs.ErrorExit(err)
+	defer file.Close()
+
+	_, err = file.Seek(0, 0)
+	stuffs.ErrorExit(err)
+	defer file.Close()
+
 	stream, err := c.Exchanger(context.Background())
 	stuffs.ErrorExit(err)
 
 	msg_client := &ui.Request{Message: fileName, Cmd: ui.Cmd_C_PUSH, State: ui.State_S_READY}
-	stuffs.ErrorExit(stream.Send(msg_client)) // отправка
+	stuffs.ErrorExit(stream.Send(msg_client))
 
-	msg_server, err := stream.Recv() // получение
+	msg_server, err := stream.Recv()
 	stuffs.ErrorExit(err)
 
 	if msg_server.GetState() == ui.State_S_READY {
-		reader := bufio.NewReader(file)
-		buffer := make([]byte, 1024)
+		buffer := make([]byte, RS_BYTE)
 		for {
-			n, err := reader.Read(buffer)
+			n, err := file.Read(buffer)
 			if err == io.EOF {
 				msg_client = &ui.Request{Cmd: ui.Cmd_C_WAIT, State: ui.State_S_DONE}
 				stuffs.ErrorExit(stream.Send(msg_client))
@@ -60,7 +74,7 @@ func pushFile(c ui.ImagePoolServiceClient, filePath, fileName string) {
 				break
 			}
 			stuffs.ErrorExit(err)
-			msg_client = &ui.Request{Bytes: buffer[:n]}
+			msg_client.Bytes = buffer[:n]
 			stuffs.ErrorExit(stream.Send(msg_client))
 		}
 	} else {
