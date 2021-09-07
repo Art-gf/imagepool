@@ -3,6 +3,9 @@ package main
 import (
 	ui "afg/imagepool/proto"
 	"afg/imagepool/stuffs"
+
+	"google.golang.org/grpc"
+
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,8 +15,6 @@ import (
 	"path/filepath"
 	"syscall"
 	"time"
-
-	"google.golang.org/grpc"
 )
 
 const (
@@ -22,6 +23,7 @@ const (
 	ADR_2     = "localhost:8085"
 	MAX_1     = 10
 	MAX_2     = 100
+	RS_BYTE   = 1024
 )
 
 type ImagePoolServer struct {
@@ -90,10 +92,13 @@ func (s *ImageListServer) List(stream ui.ImageListService_ListServer) (err error
 func pushFile(s *ImagePoolServer, stream ui.ImagePoolService_ExchangerServer, msg_client *ui.Request) error {
 	fileName := msg_client.GetMessage()
 	log.Printf("Load file [%s]: new request", fileName)
+
 	file, err := os.Create(s.folder + fileName)
 	stuffs.ErrorExit(err)
+
 	msg_server := &ui.Response{State: ui.State_S_READY}
 	stuffs.ErrorExit(stream.Send(msg_server))
+
 	for {
 		msg_client, err := stream.Recv()
 		stuffs.ErrorExit(err)
@@ -117,6 +122,7 @@ func pushFile(s *ImagePoolServer, stream ui.ImagePoolService_ExchangerServer, ms
 func getFile(s *ImagePoolServer, stream ui.ImagePoolService_ExchangerServer, msg_client *ui.Request) error {
 	fileName := msg_client.GetMessage()
 	log.Printf("Download file [%s]: new request", fileName)
+
 	file, err := os.Open(s.folder + fileName)
 	if err != nil {
 		msg_server := &ui.Response{Message: fmt.Sprint(err), State: ui.State_S_ERROR}
@@ -125,9 +131,11 @@ func getFile(s *ImagePoolServer, stream ui.ImagePoolService_ExchangerServer, msg
 		return err
 	}
 	log.Printf("Download file[%s]: file founded", fileName)
+
 	msg_server := &ui.Response{Message: fileName, State: ui.State_S_READY}
 	stuffs.ErrorExit(stream.Send(msg_server))
-	buffer := make([]byte, 1024)
+
+	buffer := make([]byte, RS_BYTE)
 	for {
 		n, err := file.Read(buffer)
 		if err == io.EOF {
@@ -135,7 +143,7 @@ func getFile(s *ImagePoolServer, stream ui.ImagePoolService_ExchangerServer, msg
 			file.Close()
 			break
 		}
-		msg_server := &ui.Response{Bytes: buffer[:n]}
+		msg_server.Bytes = buffer[:n]
 		stuffs.ErrorExit(stream.Send(msg_server))
 	}
 	return err
@@ -145,10 +153,11 @@ func getFile(s *ImagePoolServer, stream ui.ImagePoolService_ExchangerServer, msg
 func listFile(s *ImageListServer, stream ui.ImageListService_ListServer, msg_client *ui.Request) error {
 	log.Println("Send file list: new request")
 	files, err := ioutil.ReadDir(s.folder)
-
 	stuffs.ErrorExit(err)
+
 	msg_server := &ui.Response{Message: "No | filename | created | modified", State: ui.State_S_READY}
 	stuffs.ErrorExit(stream.Send(msg_server))
+
 	fileCount := 0
 	for _, f := range files {
 		fileCount++

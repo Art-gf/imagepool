@@ -4,22 +4,20 @@ import (
 	ui "afg/imagepool/proto"
 	"afg/imagepool/stuffs"
 
+	"google.golang.org/grpc"
+
+	"context"
+	"fmt"
 	"image"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-
-	//"bufio"
-	"context"
-	"fmt"
 	"io"
 	"log"
 	"os"
-
-	"google.golang.org/grpc"
 )
 
-const ABOUT = `This is the Client for recieve and request files from Server
+const ABOUT = `This is the Client for recieve and request files from Server (.jpeg .png .gif)
 Usage:
 	client <command> [arguments]
 Commands:
@@ -84,14 +82,13 @@ func pushFile(c ui.ImagePoolServiceClient, filePath, fileName string) {
 }
 
 func getFile(c ui.ImagePoolServiceClient, filePath, fileName string) {
-
 	stream, err := c.Exchanger(context.Background())
 	stuffs.ErrorExit(err)
 
 	msg_client := &ui.Request{Message: fileName, Cmd: ui.Cmd_C_GET, State: ui.State_S_READY}
 	stuffs.ErrorExit(stream.Send(msg_client))
 
-	msg_server, err := stream.Recv() // получение
+	msg_server, err := stream.Recv()
 	stuffs.ErrorExit(err)
 
 	if msg_server.GetState() == ui.State_S_READY {
@@ -133,7 +130,7 @@ func listFile(c ui.ImageListServiceClient) {
 		fileCount := 0
 		log.Print(msg_server.GetMessage())
 		for {
-			msg_server, err := stream.Recv()
+			msg_server, err = stream.Recv()
 			stuffs.ErrorExit(err)
 			if msg_server.GetState() == ui.State_S_ERROR {
 				log.Printf("Request get list of all files: error from server [%s]", msg_server.GetMessage())
