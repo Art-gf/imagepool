@@ -151,6 +151,33 @@ func listFile(c ui.ImageListServiceClient) {
 	}
 }
 
+func argLine(arg []string) (com int, err error) {
+	n := len(arg)
+	if n < 2 {
+		return 0, fmt.Errorf("%s", UNEXP)
+	}
+	switch arg[1] {
+	case PUSHF:
+		if n < 4 {
+			return 0, fmt.Errorf("%s", MOREAR)
+		} else {
+			return 1, err
+		}
+	case GETF:
+		if n < 4 {
+			return 0, fmt.Errorf("%s", MOREAR)
+		} else {
+			return 2, err
+		}
+	case LISTF:
+		return 3, err
+	case "?", "help":
+		return 99, err
+	default:
+		return 0, fmt.Errorf("%s", UNEXP)
+	}
+}
+
 func main() {
 	conn_1, err := grpc.Dial(ADR_1, grpc.WithInsecure())
 	stuffs.ErrorExit(err)
@@ -160,29 +187,16 @@ func main() {
 	client_1 := ui.NewImagePoolServiceClient(conn_1)
 	client_2 := ui.NewImageListServiceClient(conn_2)
 
-	if len(os.Args) < 2 {
-		fmt.Println(UNEXP)
-		os.Exit(1)
-	}
-	// можно получше
-	switch os.Args[1] {
-	case PUSHF:
-		if len(os.Args) < 4 || os.Args[2] == "" || os.Args[3] == "" {
-			log.Fatalln(MOREAR)
-		} else {
-			pushFile(client_1, os.Args[2], os.Args[3])
-		}
-	case GETF:
-		if len(os.Args) < 4 || os.Args[2] == "" || os.Args[3] == "" {
-			log.Fatalln(MOREAR)
-		} else {
-			getFile(client_1, os.Args[2], os.Args[3])
-		}
-	case LISTF:
+	n, err := argLine(os.Args)
+	stuffs.ErrorExit(err)
+	switch n {
+	case 1:
+		pushFile(client_1, os.Args[2], os.Args[3])
+	case 2:
+		getFile(client_1, os.Args[2], os.Args[3])
+	case 3:
 		listFile(client_2)
-	case "?", "help":
+	case 99:
 		fmt.Println(ABOUT)
-	default:
-		fmt.Println(UNEXP)
 	}
 }
