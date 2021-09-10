@@ -172,7 +172,7 @@ func argLine(arg []string) (com int, err error) {
 	case LISTF:
 		return 3, err
 	case "?", "help":
-		return 99, err
+		return 0, fmt.Errorf("%s", ABOUT)
 	default:
 		return 0, fmt.Errorf("%s", UNEXP)
 	}
@@ -196,7 +196,6 @@ func main() {
 		getFile(client_1, os.Args[2], os.Args[3])
 	case 3:
 		listFile(client_2)
-	case 99:
-		fmt.Println(ABOUT)
+	default:
 	}
 }
